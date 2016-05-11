@@ -1,11 +1,12 @@
+package IntegrationApp;
 
+import IntegrationApp.Interface;
 
 class IntegrationApp
 {
-	public static void main()
+	public static void main(String[] args)
 		{
-			String[] cmd = new String[]{"/bin/sh", "bash/vm.sh"};
-			Process pr = Runtime.getRuntime().exec(cmd);
+			Interface interface = new Interface();
 		}
 
 };
