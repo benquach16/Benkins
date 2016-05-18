@@ -1,1 +1,1 @@
-echo 'test';
+vagrant up
