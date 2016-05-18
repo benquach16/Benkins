@@ -4,7 +4,7 @@ class Interface
 {
 	Interface()
 		{
-			String[] cmd = new String[]{"/bin/sh", "bash/vm.sh"};
-			Runtime.getRuntime();
+			//String[] cmd = new String[]{"/bin/sh", "bash/vm.sh"};
+
 		}
 };

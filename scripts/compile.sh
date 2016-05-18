@@ -4,3 +4,5 @@ export JAVA_HOME=/usr/csshare/pkgs/jdk1.7.0_17
 export PATH=$JAVA_HOME/bin:$PATH
 
 javac -d $DIR/../classes/ ./../src/Interface.java ./../src/Main.java
+
+java -cp ./../classes/ IntegrationApp.IntegrationApp
