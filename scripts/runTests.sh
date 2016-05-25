@@ -18,6 +18,11 @@ TMP_STDERR=`mktemp`
 git clone -b $BRANCH https://github.com/$HANDLE/$REPO.git
 cd $REPO
 
+[ ! -d tests ] && {
+    echo "ERROR: no tests directory found in $REPO on branch $BRANCH" >&2
+    exit 1;
+}
+
 [ -f $STDOUT ] && rm $STDOUT
 [ -f $STDERR ] && rm $STDERR
 [ -f $STAT ] && rm $STAT
