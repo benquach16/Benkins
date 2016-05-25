@@ -2,51 +2,90 @@
 
 # vm test script - run every time the machine is brought up
 
+
+## SETUP ##
+
+# git parameters
 HANDLE="dylanjay"
 REPO="cs183proj"
 BRANCH="PullRequestBranch"
 
+# vagrant stuff
 OUT_DIR="/vagrant_data"
 
 STDOUT="$OUT_DIR/stdout.txt"
 STDERR="$OUT_DIR/stderr.txt"
 STAT="$OUT_DIR/stat.txt"
 
+# temp files
 TMP_STDOUT=`mktemp`
 TMP_STDERR=`mktemp`
 
-git clone -b $BRANCH https://github.com/$HANDLE/$REPO.git
-cd $REPO
-
-[ ! -d tests ] && {
-    echo "ERROR: no tests directory found in $REPO on branch $BRANCH" >&2
-    exit 1;
-}
-
+# files
 [ -f $STDOUT ] && rm $STDOUT
 [ -f $STDERR ] && rm $STDERR
 [ -f $STAT ] && rm $STAT
 
+# commands to run on exit
+STOP_CMD() {
+    rm $TMP_STDOUT $TMP_STDERR
+    poweroff -f
+}
+
+# safe cd
+SAFE_CD() {
+    cd $1 || {
+        echo "ERROR: could not change directory to '$1' from '$(pwd)'" >&2
+        STOP_CMD
+    }
+}
+
+
+## REPO ##
+
+# check if it exists
+[ -d $REPO ] && {
+    SAFE_CD $REPO
+    # pull changes
+    git pull origin $BRANCH || {
+        echo "ERROR: pulling '$BRANCH' from $REPO's origin failed" >&2
+    }
+} || {
+    # clone
+    git clone -b $BRANCH https://github.com/$HANDLE/$REPO.git || {
+        echo "ERROR: cloning branch '$BRANCH' from $REPO failed" >&2
+        STOP_CMD
+    }
+    SAFE_CD $REPO
+}
+
+# check for tests directory
+[ ! -d tests ] && {
+    echo "ERROR: no tests directory found in $REPO on branch '$BRANCH'" >&2
+    STOP_CMD
+}
+
+
+## RUN TESTS ##
 for f in tests/*
 do
-    if [ -e "$f" ]
+    # if the file is executable
+    if [ -x "$f" ]
     then
+        # execute and save stdout and stderr
         "$f" 1>$TMP_STDOUT 2>$TMP_STDERR ||
             {
-                echo `basename $f`" returned error code [$?] during execution" >> $STAT
+                echo "[$(basename $f)] returned error code $? during execution" >> $STAT
             }
+        # add '[$(basename f)] ' to the beginning of each line of the current
+        # test's stdout and stderr
         sed "s/\(.*\)/[$(basename $f)] \1/" $TMP_STDOUT >>$STDOUT
         sed "s/\(.*\)/[$(basename $f)] \1/" $TMP_STDERR >>$STDERR
     fi
 done
 
 
-# poewroff to avoid having to run "vagrant halt" after every
-# "vagrant up"
-# the -f flag is there to make it shutdown as quickly as possible.
-# Otherwise, vagrant may be invoked too quickly, and next jobs would
-# not be run (becuase "vagrant up" would return upon seeing an existing
-# instance)
-/sbin/poweroff -f
+## CLEANUP ##
+STOP_CMD
 
 
