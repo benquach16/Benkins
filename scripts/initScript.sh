@@ -2,6 +2,6 @@
 
 # vm init scrip - run when the machine first starts, and never again
 
-echo "This is the init script"
+yum update -y
+yum install -y git
 
-echo "With error messages" >&2

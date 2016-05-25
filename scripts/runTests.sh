@@ -2,29 +2,37 @@
 
 # vm test script - run every time the machine is brought up
 
-# demo of same red/green coloring as the init script.
-# output coloring can be configured in the Vagrantfile
-echo "Running tests..."
-echo "whoops" >&2
+HANDLE="dylanjay"
+REPO="cs183proj"
+BRANCH="PullRequestBranch"
 
-# put results into /vagrant_data, and they will populate the
-# host's "output" folder
+OUT_DIR="/vagrant_data"
 
+STDOUT="$OUT_DIR/stdout.txt"
+STDERR="$OUT_DIR/stderr.txt"
+STAT="$OUT_DIR/stat.txt"
 
+TMP_STDOUT=`mktemp`
+TMP_STDERR=`mktemp`
 
-# This script would do something along the lines of pull a repo,
-# run tests, and put the results in /vagrant_data
-username="dylanjay"
-reponame="cs183proj"
-repo="git://github.com/$username/$reponame.git"
-branch="master"
-path="/home/vagrant/Desktop/projTest/test"
-git clone -b $branch $repo $path -q
-forPath="/home/vagrant/Desktop/projTest/test/*.sh"
+git clone -b $BRANCH https://github.com/$HANDLE/$REPO.git
+cd $REPO
 
-for f in $forPath
+[ -f $STDOUT ] && rm $STDOUT
+[ -f $STDERR ] && rm $STDERR
+[ -f $STAT ] && rm $STAT
+
+for f in tests/*
 do
-    sh $f >>/home/vagrant/shared/out.txt 2>&1
+    if [ -e "$f" ]
+    then
+        "$f" 1>$TMP_STDOUT 2>$TMP_STDERR ||
+            {
+                echo `basename $f`" returned error code [$?] during execution" >> $STAT
+            }
+        sed "s/\(.*\)/[$(basename $f)] \1/" $TMP_STDOUT >>$STDOUT
+        sed "s/\(.*\)/[$(basename $f)] \1/" $TMP_STDERR >>$STDERR
+    fi
 done
 
 
