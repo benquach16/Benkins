@@ -1,4 +1,4 @@
 *.class
 .vagrant
 *.swp
-.idea\
+.idea
