@@ -12,6 +12,9 @@ import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Hashtable;
+import java.util.LinkedList;
+
+import java.util.Queue;
 
 import com.google.gson.TypeAdapter;
 import java.lang.reflect.Type;
@@ -20,6 +23,7 @@ import com.google.gson.reflect.TypeToken;
 class GitScrape {
 
 	public static Map<String, JsonObject> allJobs = new Hashtable<String, JsonObject>();
+	public static Queue<String> queuedJobs = new LinkedList<String>();
 
     public static void main(String[] args) {
 
@@ -47,9 +51,17 @@ class GitScrape {
 		Runnable periodicTask = new Runnable() {
 			public void run() {
 				System.out.println("Updating List...");
+
 				ArrayList<String> repoList = getAllRepositories();
 				checkForPullRequests(repoList);
-				System.out.println("Update Complete.");
+
+				System.out.println("Update Complete. Checking the Queue...");
+
+				if(!queuedJobs.isEmpty()){
+					spawnVM(queuedJobs.poll());
+				}
+
+				System.out.println("Queue Check Complete");
 			}
 		};
 
@@ -149,14 +161,14 @@ class GitScrape {
 			if(!allJobs.containsKey(pullReqURL)){
 				
 				allJobs.put(pullReqURL, pullRequestJArray.get(i).getAsJsonObject());
-				spawnVM(repoURL, branchName);
+				queuedJobs.add(pullReqURL);
 			}
 		}
 	}
 
-	public static void spawnVM(String repoURL, String branchName)
+	public static void spawnVM(String pullReqURL)
 	{
-		System.out.println(repoURL + ", " + branchName);
+		System.out.println(pullReqURL);
 		//To get the pull request:
 		//<pqr> = Pull Request Number
 		//git fetch origin pull/<pqr>/head:pr-<pqr>
