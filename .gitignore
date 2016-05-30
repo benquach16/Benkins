@@ -4,3 +4,5 @@
 .idea
 application.yml
 target
+listOfRepositories.txt
+output
