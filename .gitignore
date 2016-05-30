@@ -2,3 +2,5 @@
 .vagrant
 *.swp
 .idea
+application.yml
+target
