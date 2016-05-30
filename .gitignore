@@ -1,3 +1,5 @@
 [Rr]esources/
 *~
 *.class
+.vagrant
+*.swp

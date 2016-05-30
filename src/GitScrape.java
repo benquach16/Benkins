@@ -173,6 +173,23 @@ class GitScrape {
 		//<pqr> = Pull Request Number
 		//git fetch origin pull/<pqr>/head:pr-<pqr>
 		//git checkout pr--<pqr>
+		try{
+			//String[] cmd = new String[]{"/bin/sh", "/home/ben/IntegrationApp/src/bash/vm.sh"};
+
+			Process pr = Runtime.getRuntime().exec("vagrant up");
+			pr.waitFor();
+			BufferedReader buf = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+
+			String line = "";
+
+			while ((line=buf.readLine())!=null) {
+
+				System.out.println(line);
+
+			}
+			System.out.print("sdf");
+		}
+		catch(Exception e){}
 	}
 
 	public static String getString(JsonElement jsonElement, String[] path, int index){
