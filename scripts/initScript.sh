@@ -2,6 +2,9 @@
 
 # vm init scrip - run when the machine first starts, and never again
 
-echo "This is the init script"
+# WARNING: do not run an update command. it messes things up.
+# if you need to update packages, update them by name.
 
-echo "With error messages" >&2
+yum install -y git
+
+
