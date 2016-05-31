@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Ben CI</title>
+    <title>Benkins | Continuous Integration</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel='stylesheet' href='/webjars/bootstrap/bootstrap.min.css' />
     <style>
@@ -131,7 +131,7 @@
         <form id="form-mini" action="#" th:action="@{/config}" th:object="${config}" method="post">
 
             <div class="form-row">
-                <p>Id: <input type="text" ng-model="user.id" th:field="*{id}" /></p>
+                <p>Username: <input type="text" ng-model="user.id" th:field="*{id}" /></p>
                 <button ng-click="config.grabRepo()" class="btn btn-primary" type="button">Get Repositories</button>
             </div>
 
