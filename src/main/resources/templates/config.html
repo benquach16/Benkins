@@ -177,11 +177,17 @@
                                 $("#myselection").attr("size", $scope.repos.length);
                                 $(".error").text("");
                             } else {
+                                $scope.repos = []
                                 $(".error").text(userId + " has no public repositories.");
                             }
+                            $("#myselection").attr("size", $scope.repos.length);
                         })
                         .error(function(xhr, status, error) {
-                            console.log(status);
+                            if(status == 404) {
+                                $(".error").text("Username not found for: " + userId);
+                            } else if (status == 500) {
+                                $(".error").text("GitHub appears to not be working.");
+                            }
                         });
                 };
             });
