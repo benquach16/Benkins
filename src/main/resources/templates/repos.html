@@ -20,7 +20,14 @@
                            <li th:each="out: ${repo.value}" class="list-group-item">
                                <button class="btn" th:text="${out.key}" th:attr="ng-click= ${user.key}+${out.key} + '=!' + ${user.key}+${out.key} , ng-init=${user.key}+${out.key} + '=false'"></button>
                                <div th:attr="ng-show=${user.key}+${out.key}">
-                                   <p th:text="${out.value}"></p>
+                                   <ul class="list-group">
+                                       <li th:each="pull: ${out.value}" class="list-group-item">
+                                           <button class="btn" th:text="${pull.key}" th:attr="ng-click= ${user.key}+${pull.key} + '=!' + ${user.key}+${pull.key} , ng-init=${user.key}+${pull.key} + '=false'"></button>
+                                           <div th:attr="ng-show=${user.key}+${pull.key}">
+                                               <p th:text="${pull.value}"></p>
+                                           </div>
+                                       </li>
+                                   </ul>
                                </div>
                            </li>
                        </ul>

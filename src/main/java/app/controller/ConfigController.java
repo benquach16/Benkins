@@ -66,7 +66,7 @@ public class ConfigController {
 
         //grab all the users from directory IntegrationApp/output/{username}/{repo}/{pullnumber}
         File file = new File(System.getProperty("user.dir") + "/output");
-        Map< String, Map< String, Map<String, String> > > userMap = new HashMap<>();
+        Map< String, Map< String, Map<String, Map<String, String> > > > userMap = new HashMap<>();
 
         String[] userNames = file.list(new FilenameFilter() {
             @Override
@@ -87,29 +87,43 @@ public class ConfigController {
             });
             //System.out.print('\t' + Arrays.toString(repoNames));
             //make temp map to hold the repo info
-            Map<String, Map<String, String> > temp = new HashMap<>();
+            Map<String, Map<String, Map<String, String> > > temp = new HashMap<>();
             for (String repoName: repoNames) {
                 File repoDir = new File(System.getProperty("user.dir") + "/output/" + userName + '/' + repoName);
                 String[] outputs = repoDir.list(new FilenameFilter(){
                     @Override
                     public boolean accept(File current, String name) {
-                        return new File(current, name).isFile();
+                        return new File(current, name).isDirectory();
                     }
                 });
                 //System.out.print("\t\t" + Arrays.toString(outputs));
 
-                Map<String, String> tempo = new HashMap<>();
+                Map<String, Map<String, String> > tempo = new HashMap<>();
                 for (String output: outputs) {
-                    String logName = System.getProperty("user.dir") + "/output/" + userName + '/' + repoName + '/' + output;
-                    try {
-                        String log = readFile(logName, StandardCharsets.UTF_8);
-                        if(log.isEmpty()){
-                            log = "This file is empty! No messages to display.";
+                    String pullNum = System.getProperty("user.dir") + "/output/" + userName + '/' + repoName + '/' + output;
+                    File pullDir = new File(pullNum);
+                    String[] pulls = pullDir.list(new FilenameFilter(){
+                        @Override
+                        public boolean accept(File current, String name) {
+                            return new File(current, name).isFile();
                         }
-                        tempo.put(output, log);
-                    } catch(IOException e){
-                        System.out.print("Error reading: " + e);
+                    });
+
+                    Map<String, String> tempoo = new HashMap<>();
+                    for (String pull: pulls) {
+                        String logName = pullNum + '/' + pull;
+                        try {
+                            String log = readFile(logName, StandardCharsets.UTF_8);
+                            if(log.isEmpty()){
+                                log = "This file is empty! No messages to display.";
+                            }
+                            tempoo.put(pull, log);
+                        } catch(IOException e){
+                            System.out.print("Error reading: " + e);
+                        }
                     }
+                    tempo.put(output, tempoo);
+
                 }
 
                 //add output file names to map
