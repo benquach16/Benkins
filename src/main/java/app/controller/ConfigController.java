@@ -8,10 +8,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import app.service.Config;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 @Controller
 public class ConfigController {
+
+    static String readFile(String path, Charset encoding)
+            throws IOException
+    {
+        byte[] encoded = Files.readAllBytes(Paths.get(path));
+        return new String(encoded, encoding);
+    }
 
     @RequestMapping(value="/config", method=RequestMethod.GET)
     public String greetingForm(Model model) {
@@ -55,7 +66,7 @@ public class ConfigController {
 
         //grab all the users from directory IntegrationApp/output/{username}/{repo}/{pullnumber}
         File file = new File(System.getProperty("user.dir") + "/output");
-        Map< String, Map< String, String[] > > userMap = new HashMap<>();
+        Map< String, Map< String, Map<String, String> > > userMap = new HashMap<>();
 
         String[] userNames = file.list(new FilenameFilter() {
             @Override
@@ -63,7 +74,7 @@ public class ConfigController {
                 return new File(current, name).isDirectory();
             }
         });
-        System.out.print(Arrays.toString(userNames));
+        //System.out.print(Arrays.toString(userNames));
 
         //iterate through each user name and grab repo directory names
         for (String userName: userNames) {
@@ -74,9 +85,9 @@ public class ConfigController {
                     return new File(current, name).isDirectory();
                 }
             });
-            System.out.print('\t' + Arrays.toString(repoNames));
+            //System.out.print('\t' + Arrays.toString(repoNames));
             //make temp map to hold the repo info
-            Map<String, String[]> temp = new HashMap<>();
+            Map<String, Map<String, String> > temp = new HashMap<>();
             for (String repoName: repoNames) {
                 File repoDir = new File(System.getProperty("user.dir") + "/output/" + userName + '/' + repoName);
                 String[] outputs = repoDir.list(new FilenameFilter(){
@@ -85,9 +96,24 @@ public class ConfigController {
                         return new File(current, name).isFile();
                     }
                 });
-                System.out.print("\t\t" + Arrays.toString(outputs));
+                //System.out.print("\t\t" + Arrays.toString(outputs));
+
+                Map<String, String> tempo = new HashMap<>();
+                for (String output: outputs) {
+                    String logName = System.getProperty("user.dir") + "/output/" + userName + '/' + repoName + '/' + output;
+                    try {
+                        String log = readFile(logName, StandardCharsets.UTF_8);
+                        if(log.isEmpty()){
+                            log = "This file is empty! No messages to display.";
+                        }
+                        tempo.put(output, log);
+                    } catch(IOException e){
+                        System.out.print("Error reading: " + e);
+                    }
+                }
+
                 //add output file names to map
-                temp.put(repoName, outputs);
+                temp.put(repoName, tempo);
             }
             //after all repos have been updated with output logs, add that map to user map
             userMap.put(userName, temp);
@@ -97,4 +123,9 @@ public class ConfigController {
         return "repos";
     }
 
+    @RequestMapping(value="/repo/{username}", method= RequestMethod.GET)
+    public String showReposFromUser(@ModelAttribute Config config, Model model) {
+
+        return "repos";
+    }
 }
