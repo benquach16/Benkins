@@ -67,7 +67,7 @@ class GitScrape {
 			}
 		};
 
-		executor.scheduleAtFixedRate(periodicTask, 0, 1, TimeUnit.MINUTES);
+		executor.scheduleAtFixedRate(periodicTask, 0, 5, TimeUnit.MINUTES);
 		
 	}
 
@@ -126,10 +126,12 @@ class GitScrape {
 	//requests. Stores the pull requests in 
 	public static void checkForPullRequests(ArrayList<String> repoList){
 		for(int i = 0; i < repoList.size(); i++){
+			repoList.set(i, repoList.get(i).replaceAll("\\s+",""));
+			if(repoList.get(i).equals("")){continue;}
 			System.out.println("Checking pull requests for " + repoList.get(i));
 			
 			try{
-				URL url = new URL("https://api.github.com/repos/" + repoList.get(i).replaceAll("\\s+","") + "/pulls");
+				URL url = new URL("https://api.github.com/repos/" + repoList.get(i) + "/pulls");
 				URLConnection con = url.openConnection();
 				con.setRequestProperty("Accept", "application/vnd.github.full+json");
 
