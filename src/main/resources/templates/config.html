@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Getting Started: Handling Form Submission</title>
+    <title>Ben CI</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel='stylesheet' href='/webjars/bootstrap/bootstrap.min.css' />
     <style>
@@ -126,7 +126,6 @@
     </style>
 </head>
 <body ng-app="app" ng-controller="config as config">
-
     <div class="form-mini-container">
         <h1>Form</h1>
         <form id="form-mini" action="#" th:action="@{/config}" th:object="${config}" method="post">
@@ -163,8 +162,8 @@
                             $scope.repos = [];
                             result.forEach(function(data){
                                 $scope.repos.push({
-                                name: data.name,
-                                id: data.id
+                                    name: data.name,
+                                    id: data.id
                                 });
                             });
                         }
