@@ -1,3 +1,4 @@
+/*
 package IntegrationApp;
 
 import java.io.BufferedReader;
@@ -14,3 +15,4 @@ class IntegrationApp
 		}
 
 };
+*/

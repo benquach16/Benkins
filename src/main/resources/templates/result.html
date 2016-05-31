@@ -1,0 +1,15 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Getting Started: Handling Form Submission</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <h1>Result</h1>
+    <p th:text="'Username: ' + ${config.id}" />
+    <ul style="list-style-type: none;">
+        <li th:each="repo : ${config.repos}" th:text="${repo}"></li>
+    </ul>
+    <a  class="btn btn-primary" href="/config">Add more repositories</a>
+</body>
+</html>

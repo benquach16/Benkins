@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Benkins</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <link rel='stylesheet' href='/webjars/bootstrap/bootstrap.min.css' />
+    <style>
+
+    </style>
+</head>
+<body ng-app="app" ng-controller="repos as repos">
+    <div th:each="user: ${userMap}">
+        <button class="btn" th:text="${user.key}" th:attr="ng-click= ${user.key} + '=!' + ${user.key} , ng-init=${user.key} + '=false'"></button>
+        <div th:attr="ng-show=${user.key}">
+            <ul class="list-group">
+               <li th:each="repo: ${user.value}" class="list-group-item">
+                   <button class="btn" th:text="${repo.key}" th:attr="ng-click= ${user.key}+${repo.key} + '=!' + ${user.key}+${repo.key} , ng-init=${user.key}+${repo.key} + '=false'"></button>
+                   <div th:attr="ng-show=${user.key}+${repo.key}">
+                       <ul class="list-group">
+                           <li th:each="out: ${repo.value}" class="list-group-item">
+                               <button class="btn" th:text="${out.key}" th:attr="ng-click= ${user.key}+${out.key} + '=!' + ${user.key}+${out.key} , ng-init=${user.key}+${out.key} + '=false'"></button>
+                               <div th:attr="ng-show=${user.key}+${out.key}">
+                                   <p th:text="${out.value}"></p>
+                               </div>
+                           </li>
+                       </ul>
+                   </div>
+               </li>
+            </ul>
+        </div>
+    </div>
+    <script type="text/javascript" src="webjars/jquery/2.1.1/jquery.min.js"></script>
+    <script type="text/javascript" src="/webjars/angularjs/angular.js"></script>
+    <script type="text/javascript" src="/webjars/bootstrap/bootstrap.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0rc1/angular-route.min.js"></script>
+    <script type="text/javascript">
+        angular
+            .module("app", ['ngRoute'])
+                .controller("repos", function($scope, $http, $location) {
+
+                });
+    </script>
+</body>
+</html>
