@@ -9,10 +9,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeUnit.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Hashtable;
 import java.util.LinkedList;
+import java.lang.ProcessBuilder;
+import java.util.Scanner;
 
 import java.util.Queue;
 
@@ -30,8 +33,7 @@ class GitScrape {
 		//If the program is killed, we will want to write all the jobs to a file.
 		//This way we won't start up additional VMs to run pull requests that have
 		//already been handled.
-		Runtime.getRuntime().addShutdownHook(new Thread()
-        {
+		Runtime.getRuntime().addShutdownHook(new Thread(){
             @Override
             public void run()
             {
@@ -56,8 +58,8 @@ class GitScrape {
 				checkForPullRequests(repoList);
 
 				System.out.println("Update Complete. Checking the Queue...");
-
-				if(!queuedJobs.isEmpty()){
+				
+				while(!queuedJobs.isEmpty()){
 					spawnVM(queuedJobs.poll());
 				}
 
@@ -65,7 +67,7 @@ class GitScrape {
 			}
 		};
 
-		executor.scheduleAtFixedRate(periodicTask, 0, 5, TimeUnit.MINUTES);
+		executor.scheduleAtFixedRate(periodicTask, 0, 1, TimeUnit.MINUTES);
 		
 	}
 
@@ -110,12 +112,12 @@ class GitScrape {
 		try{
 			if(f.exists() && !f.isDirectory()) {
 				repoNames = new String(Files.readAllBytes(Paths.get(filename)), StandardCharsets.UTF_8);
+				//repoNames = repoNames.substring(0, repoNames.length()-1);
 			}
 			else{
 				System.err.println("Failed to locate "+filename);
 			}
 		}catch (Exception e){System.err.println("Failed to read from "+filename);}
-		
 		return new ArrayList<String>(java.util.Arrays.asList(repoNames.split("\n")));
 	}
 
@@ -125,10 +127,9 @@ class GitScrape {
 	public static void checkForPullRequests(ArrayList<String> repoList){
 		for(int i = 0; i < repoList.size(); i++){
 			try{
-				URL url = new URL("https://api.github.com/repos/" + repoList.get(i) + "/pulls");
+				URL url = new URL("https://api.github.com/repos/" + repoList.get(i).replaceAll("\\s+","") + "/pulls");
 				URLConnection con = url.openConnection();
 				con.setRequestProperty("Accept", "application/vnd.github.full+json");
-
 
 				BufferedReader in = new BufferedReader(new InputStreamReader(
 		                                con.getInputStream()));
@@ -143,7 +144,6 @@ class GitScrape {
 				e.printStackTrace();
 			}
 		}
-		
 	}
 
 	//Pulls some of the relevant values and passes them into SpawnVM
@@ -152,12 +152,7 @@ class GitScrape {
 		JsonArray pullRequestJArray = gson.fromJson(jsonAsString, JsonArray.class);
 		for(int i = 0; i < pullRequestJArray.size(); i++)
 		{
-			String pullReqNumber = pullRequestJArray.get(i).getAsJsonObject().get("number").getAsString();
-			String repoURL = getString(pullRequestJArray.get(i), "head:repo:clone_url");
-			String branchName = getString(pullRequestJArray.get(i), "head:ref");
 			String pullReqURL = pullRequestJArray.get(i).getAsJsonObject().get("url").getAsString();
-			System.out.println("RepoURL: " + repoURL);
-			System.out.println("branchName: " + branchName);
 			if(!allJobs.containsKey(pullReqURL)){
 				
 				allJobs.put(pullReqURL, pullRequestJArray.get(i).getAsJsonObject());
@@ -166,50 +161,84 @@ class GitScrape {
 		}
 	}
 
-	public static void spawnVM(String pullReqURL)
-	{
-		System.out.println(pullReqURL);
+	public static void spawnVM(String pullReqURL){
+		System.out.println("Spawning...");
 		//To get the pull request:
 		//<pqr> = Pull Request Number
 		//git fetch origin pull/<pqr>/head:pr-<pqr>
 		//git checkout pr--<pqr>
+		
+		//Get All Relevant Information
+		JsonObject pullReqInfo = allJobs.get(pullReqURL);
+		String pullReqNumber = pullReqInfo.get("number").getAsString();
+		String repoName = getString(pullReqInfo, "head:repo:name");
+		String handle = getString(pullReqInfo, "head:user:login");
+		String branchName = getString(pullReqInfo, "head:ref");
+		
+		//Overwrite the test scripts to take the correct repo
 		try{
-			//String[] cmd = new String[]{"/bin/sh", "/home/ben/IntegrationApp/src/bash/vm.sh"};
-
-			Process pr = Runtime.getRuntime().exec("vagrant up");
-			pr.waitFor();
-			BufferedReader buf = new BufferedReader(new InputStreamReader(pr.getInputStream()));
-
-			String line = "";
-
-			while ((line=buf.readLine())!=null) {
-
-				System.out.println(line);
-
-			}
-			System.out.print("sdf");
+			Path path = Paths.get("../scripts/runTests.sh");
+			String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+			System.out.println("Replacing Handle");
+			content = content.replaceFirst("HANDLE=.+?#__HANDLE__",
+											"HANDLE=\"" + handle + "\" #__HANDLE__");
+			System.out.println("Replacing Repo Name");
+			content = content.replaceFirst("REPO=.+?#__REPO__", 
+											"REPO=\"" + repoName + "\" #__REPO__");
+			System.out.println("Replacing Branch Name");
+			content = content.replaceFirst("BRANCH=.+?#__BRANCH__",
+											"BRANCH=\"" + branchName + "\" #__BRANCH__");
+			System.out.println("Replacing PullReqNum");
+			content = content.replaceFirst("PULL_REQ=.+?#__PULL_REQ__",
+											"PULL_REQ=\"" + pullReqNumber + "\" #__PULL_REQ__");
+			Files.write(path, content.getBytes(StandardCharsets.UTF_8));
 		}
-		catch(Exception e){}
+		catch(Exception e){e.printStackTrace();}
+		
+		
+		
+		//Run "vagrant up". Wait for it to complete before continuing.
+		try{
+			Process p = Runtime.getRuntime().exec("vagrant up");
+			inheritIO(p.getInputStream(), System.out);
+			inheritIO(p.getErrorStream(), System.err);
+			p.waitFor();
+		}
+		catch(Exception e){e.printStackTrace();}
+	}
+	
+	private static void inheritIO(final InputStream src, final PrintStream dest) {
+		new Thread(new Runnable() {
+			public void run() {
+				Scanner sc = new Scanner(src);
+				while (sc.hasNextLine()) {
+					dest.println(sc.nextLine());
+				}
+			}
+		}).start();
 	}
 
 	public static String getString(JsonElement jsonElement, String[] path, int index){
-		if(index == path.length){
-			return jsonElement.getAsString();
-		}
-
-		int braceIndex = path[index].indexOf("[");
-		if(braceIndex == 0){
-			int arrayIndex = Integer.parseInt(path[index].substring(braceIndex, path[index].length()-1));
-			return getString(jsonElement.getAsJsonArray().get(arrayIndex), path, ++index);
-		}
-		else if(braceIndex > 0){
-			String arrayName = path[index].substring(0, braceIndex);
-			int arrayIndex = Integer.parseInt(path[index].substring(braceIndex, path[index].length()-1));
-			return getString(jsonElement.getAsJsonObject().get(arrayName).getAsJsonArray().get(arrayIndex), path, ++index);
-		}
-		else{
-			return getString(jsonElement.getAsJsonObject().get(path[index]), path, ++index);
-		}
+		try{
+			if(index >= path.length){
+				return jsonElement.getAsString();
+			}
+			
+			int braceIndex = path[index].indexOf("[");
+			if(braceIndex == 0){
+				int arrayIndex = Integer.parseInt(path[index].substring(braceIndex, path[index].length()-1));
+				return getString(jsonElement.getAsJsonArray().get(arrayIndex), path, ++index);
+			}
+			else if(braceIndex > 0){
+				String arrayName = path[index].substring(0, braceIndex);
+				int arrayIndex = Integer.parseInt(path[index].substring(braceIndex, path[index].length()-1));
+				return getString(jsonElement.getAsJsonObject().get(arrayName).getAsJsonArray().get(arrayIndex), path, ++index);
+			}
+			else{
+				return getString(jsonElement.getAsJsonObject().get(path[index]), path, ++index);
+			}
+		}catch(Exception e){e.printStackTrace(); return "";}
+		
 	}
 
 	public static String getString(JsonElement jsonElement, String path){

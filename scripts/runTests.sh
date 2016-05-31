@@ -6,12 +6,19 @@
 ## SETUP ##
 
 # git parameters
-HANDLE="dylanjay"
-REPO="cs183proj"
-BRANCH="PullRequestBranch"
+HANDLE="dylanjay" #__HANDLE__
+REPO="cs183proj" #__REPO__
+BRANCH="PullRequestBranch" #__BRANCH__
+PULL_REQ="1" #__PULL_REQ__
 
 # vagrant stuff
-OUT_DIR="/vagrant_data"
+OUT_DIR="/vagrant_data/$HANDLE/$REPO/$PULL_REQ"
+
+mkdir -p /vagrant_data/$HANDLE/$REPO/$PULL_REQ
+touch /vagrant_data/$HANDLE/$REPO/$PULL_REQ/stdout.txt
+touch /vagrant_data/$HANDLE/$REPO/$PULL_REQ/stderr.txt
+touch /vagrant_data/$HANDLE/$REPO/$PULL_REQ/stat.txt
+
 
 STDOUT="$OUT_DIR/stdout.txt"
 STDERR="$OUT_DIR/stderr.txt"
