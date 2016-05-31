@@ -49,7 +49,7 @@ public class ConfigController {
 
             String inputStr;
             for(int i = 0; i<repoAry.length; i++) {
-                inputStr = userName + '/' + repoAry[i] + '\n';
+                inputStr = '\n' + userName + '/' + repoAry[i];
                 out.write(inputStr);
             }
             out.close();
