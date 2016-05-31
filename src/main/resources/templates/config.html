@@ -10,8 +10,9 @@
         }
 
         .form-mini-container{
-            max-width: 315px;
+            max-width: 50vw;
             margin: 0 auto;
+            padding: 50px;
             font: normal 14px sans-serif;
             text-align: center;
             color: #5f5f5f;
@@ -26,7 +27,7 @@
             margin: 0;
         }
 
-        .form-mini{
+        .form-mini {
             box-sizing: border-box;
             padding: 40px;
             background-color:  #ffffff;
@@ -44,7 +45,7 @@
             box-sizing: border-box;
             width: 240px;
             box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.08);
-            padding: 12px 18px;
+            padding: 5px;
             border: 1px solid #dbdbdb;
         }
 
@@ -90,8 +91,6 @@
             color: #ffffff;
             font-weight: bold;
             box-shadow: 1px 2px 4px 0 rgba(0, 0, 0, 0.08);
-            width: 100%;
-            padding: 14px 22px;
             border: 0;
             cursor: pointer;
         }
@@ -112,6 +111,14 @@
             color:  #999;
         }
 
+        #myselection {
+            width: 100%;
+        }
+
+        .error {
+            color: #EA5946;
+        }
+
         /*	Making the form responsive. Remove this media query
         if you don't need the form to work on mobile devices. */
 
@@ -124,18 +131,21 @@
 </head>
 <body ng-app="app" ng-controller="config as config">
     <div class="form-mini-container">
-        <h1>Form</h1>
-        <form id="form-mini" action="#" th:action="@{/config}" th:object="${config}" method="post">
+        <h1>Add Repositories</h1>
+        <form class="form-mini" action="#" th:action="@{/config}" th:object="${config}" method="post">
 
             <div class="form-row">
-                <p>Username: <input type="text" ng-model="user.id" th:field="*{id}" /></p>
+                <p>
+                    Username: <br />
+                    <input type="text" ng-model="user.id" th:field="*{id}" />
+                </p>
                 <button ng-click="config.grabRepo()" class="btn btn-primary" type="button">Get Repositories</button>
             </div>
 
             <div id="repo-list" class="form-row">
-                <select id="myselection" multiple="true" ng-model="user.repos" ng-options="r.name as r.name for r in repos"  th:field="*{repos}"></select>
+                <select id="myselection" multiple="true" ng-model="user.repos" ng-options="r.name as r.name for r in repos"  th:field="*{repos}" ></select>
             </div>
-
+            <h5 class="error"></h5>
             <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
         </form>
     </div>
@@ -154,19 +164,25 @@
                     var userId = $scope.user.id;
                     var url = "https://api.github.com/users/" + userId + "/repos";
 
-                    $http.get(url, {}).success(function(result) {
-                        if(result.length > 0){
-                            $scope.repos = [];
-                            result.forEach(function(data){
-                                $scope.repos.push({
-                                    name: data.name,
-                                    id: data.id
+                    $http.get(url, {})
+                        .success(function(result) {
+                            if(result.length > 0) {
+                                $scope.repos = [];
+                                result.forEach(function(data){
+                                    $scope.repos.push({
+                                        name: data.name,
+                                        id: data.id
+                                    });
                                 });
-                            });
-                        }
-                    }).error(function(data) {
-                        console.log("failed");
-                    });
+                                $("#myselection").attr("size", $scope.repos.length);
+                                $(".error").text("");
+                            } else {
+                                $(".error").text(userId + " has no public repositories.");
+                            }
+                        })
+                        .error(function(xhr, status, error) {
+                            console.log(status);
+                        });
                 };
             });
     </script>

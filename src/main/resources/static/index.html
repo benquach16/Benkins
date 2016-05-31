@@ -15,7 +15,7 @@
     <h1>Demo</h1>
     <div class="container" ng-show="!home.authenticated">
         <div>
-            With Github: <a href="/login/github">click here</a>
+            <a href="/config">Add new repositories: </a>
         </div>
     </div>
     <div class="container" ng-show="home.authenticated">
@@ -24,7 +24,6 @@
             <button ng-click="home.logout()" class="btn btn-primary">Logout</button>
         </div>
     </div>
-
     <script type="text/javascript" src="/webjars/angularjs/angular.min.js"></script>
     <script type="text/javascript">
       angular.module("app", []).controller("home", function($http) {
