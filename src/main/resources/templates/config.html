@@ -1,21 +1,28 @@
 <!DOCTYPE HTML>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Getting Started: Handling Form Submission</title>
+    <title>Ben CI</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel='stylesheet' href='/webjars/bootstrap/bootstrap.min.css' />
 </head>
 <body ng-app="app" ng-controller="config as config">
     <h1>Form</h1>
     <form action="#" th:action="@{/config}" th:object="${config}" method="post">
-        <div style="display: in-line">
-            <p>Id: <input type="text" ng-model="user.id" th:field="*{id}" /></p>
-            <button ng-click="config.grabRepo()" class="btn btn-primary" type="button">Get Repositories</button>
+        <div style="display: inline-block">
+            <p>
+                Username: <input type="text" ng-model="user.id" th:field="*{id}" />
+            </p>
+            <button ng-click="config.grabRepo()" class="btn btn-primary" type="button">
+                Get Repositories
+            </button>
         </div>
         <div id="repo-list" class="form-control">
             <select id="myselection" multiple="true" ng-model="user.repos" ng-options="r.name as r.name for r in repos"  th:field="*{repos}"></select>
         </div>
-        <p><input type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
+        <p>
+            <input type="submit" value="Submit" />
+            <input type="reset" value="Reset" />
+        </p>
     </form>
     <script type="text/javascript" src="/webjars/jquery/jquery.js"></script>
     <script type="text/javascript" src="/webjars/angularjs/angular.js"></script>
@@ -37,8 +44,8 @@
                             $scope.repos = [];
                             result.forEach(function(data){
                                 $scope.repos.push({
-                                name: data.name,
-                                id: data.id
+                                    name: data.name,
+                                    id: data.id
                                 });
                             });
                         }
