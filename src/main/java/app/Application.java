@@ -63,7 +63,7 @@ public class Application extends WebSecurityConfigurerAdapter {
         http
                 .antMatcher("/**")
                 .authorizeRequests()
-                    .antMatchers("/", "/login**", "/webjars/**", "/config")
+                    .antMatchers("/*", "/login**", "/webjars/**", "/config")
                     .permitAll()
                 .anyRequest()
                     .authenticated()

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Benkins</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+</head>
+<body>
+    <div th:each="user: ${userMap}">
+        <p th:text="${user.key}"></p>
+        <ul>
+           <li th:each="repo: ${user.value}">
+               <p th:text="${repo.key}"></p>
+               <ul>
+                   <li th:each="out: ${repo.value}">
+                       <p th:text="${out}"></p>
+                   </li>
+               </ul>
+           </li>
+        </ul>
+    </div>
+</body>
+</html>
