@@ -126,6 +126,8 @@ class GitScrape {
 	//requests. Stores the pull requests in 
 	public static void checkForPullRequests(ArrayList<String> repoList){
 		for(int i = 0; i < repoList.size(); i++){
+			System.out.println("Checking pull requests for " + repoList.get(i));
+			
 			try{
 				URL url = new URL("https://api.github.com/repos/" + repoList.get(i).replaceAll("\\s+","") + "/pulls");
 				URLConnection con = url.openConnection();
@@ -150,6 +152,7 @@ class GitScrape {
 	public static void getPullRequestInfo(String jsonAsString){
 		Gson gson = new GsonBuilder().create();
 		JsonArray pullRequestJArray = gson.fromJson(jsonAsString, JsonArray.class);
+		if(pullRequestJArray.size() == 0){System.out.println("No pull requests found.");}
 		for(int i = 0; i < pullRequestJArray.size(); i++)
 		{
 			String pullReqURL = pullRequestJArray.get(i).getAsJsonObject().get("url").getAsString();
@@ -157,6 +160,11 @@ class GitScrape {
 				
 				allJobs.put(pullReqURL, pullRequestJArray.get(i).getAsJsonObject());
 				queuedJobs.add(pullReqURL);
+			}
+			else{
+				System.out.println("Pull request " + 
+					pullRequestJArray.get(i).getAsJsonObject().get("number").getAsString() + 
+					" already tested.");
 			}
 		}
 	}
@@ -179,16 +187,16 @@ class GitScrape {
 		try{
 			Path path = Paths.get("../scripts/runTests.sh");
 			String content = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
-			System.out.println("Replacing Handle");
+			System.out.println("Setting Handle");
 			content = content.replaceFirst("HANDLE=.+?#__HANDLE__",
 											"HANDLE=\"" + handle + "\" #__HANDLE__");
-			System.out.println("Replacing Repo Name");
+			System.out.println("Setting Repo Name");
 			content = content.replaceFirst("REPO=.+?#__REPO__", 
 											"REPO=\"" + repoName + "\" #__REPO__");
-			System.out.println("Replacing Branch Name");
+			System.out.println("Setting Branch Name");
 			content = content.replaceFirst("BRANCH=.+?#__BRANCH__",
 											"BRANCH=\"" + branchName + "\" #__BRANCH__");
-			System.out.println("Replacing PullReqNum");
+			System.out.println("Setting PullReqNum");
 			content = content.replaceFirst("PULL_REQ=.+?#__PULL_REQ__",
 											"PULL_REQ=\"" + pullReqNumber + "\" #__PULL_REQ__");
 			Files.write(path, content.getBytes(StandardCharsets.UTF_8));
