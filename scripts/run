@@ -1,0 +1,10 @@
+#! /bin/bash
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+`./compile.sh`
+if [ $? -ne 0 ]
+then
+   exit 1;
+fi
+
+java -classpath $DIR/../src:$DIR/../lib/\* GitScrape
